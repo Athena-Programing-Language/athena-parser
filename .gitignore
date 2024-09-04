@@ -1,2 +1,4 @@
 .idea
-@/target/debug
+debug/
+target/
+
