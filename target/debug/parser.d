@@ -1,0 +1,1 @@
+/home/kovalenko/my-app/athena/src/parser/target/debug/parser: /home/kovalenko/my-app/athena/src/parser/src/lexer.rs /home/kovalenko/my-app/athena/src/parser/src/main.rs /home/kovalenko/my-app/athena/src/parser/src/parser.rs
