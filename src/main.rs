@@ -4,7 +4,9 @@ mod parser;
 use lexer::Lexer;
 
 fn main() {
-    let input = "5 + 5
+    let input = "match:
+ 1
+ 1
 ".to_string();
     let mut lexer = Lexer::new(input);
     let tokens = lexer.tokenize();

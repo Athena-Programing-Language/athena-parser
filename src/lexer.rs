@@ -15,7 +15,11 @@ pub(crate) enum TokenType {
     CONST,
     IF,
     ELSE,
-
+    DO,
+    WHILE,
+    FOR,
+    MATCH,
+    RETURN,
     // Types
     STRING_TYPE,  // For '$str'
     NUMBER_TYPE,  // For '$nbr'
@@ -26,6 +30,7 @@ pub(crate) enum TokenType {
     STRING_LITERAL,
     NUMBER_LITERAL,
     BOOL_LITERAL,
+    EOF,
 }
 
 #[derive(Debug, Clone)]
@@ -78,7 +83,7 @@ impl Lexer {
             self.pos += 3;
             return Some(token);
         } else if remaining_input.starts_with("cst") {
-            let token = Token::new(TokenType::CONST, "cnt".to_string());
+            let token = Token::new(TokenType::CONST, "cst".to_string());
             self.pos += 3;
             return Some(token);
         } else if remaining_input.starts_with("+") {
@@ -101,6 +106,38 @@ impl Lexer {
             let token = Token::new(TokenType::EQUAL, "=".to_string());
             self.pos += 1;
             return Some(token);
+        } else if  remaining_input.starts_with(";") || remaining_input.starts_with(",") { 
+            let token: Token = Token::new(TokenType::COLON_END, ";".to_string());
+            self.pos += 1;
+            return Some(token);
+        } else if remaining_input.starts_with(":end")  {
+            let token: Token = Token::new(TokenType::COLON_END, ";".to_string());
+            self.pos += 4;
+            return Some(token);
+        } else if remaining_input.starts_with("if:") {
+            let token: Token = Token::new(TokenType::IF, "if:".to_string());
+            self.pos += 3;
+            return  Some(token)
+        } else if remaining_input.starts_with(":else:") {
+            let token: Token = Token::new(TokenType::ELSE, ":else:".to_string());
+            self.pos += 6;
+            return  Some(token)
+        } else if remaining_input.starts_with("do"){
+            let token: Token = Token::new(TokenType::DO, "do".to_string());
+            self.pos += 2;
+            return Some(token)
+        } else if remaining_input.starts_with("while:") {
+            let token: Token = Token::new(TokenType::WHILE, "while:".to_string());
+            self.pos += 6;
+            return Some(token);
+        } else if remaining_input.starts_with("for:") {
+            let token: Token = Token::new(TokenType::FOR, "for:".to_string());
+            self.pos += 4;
+            return  Some(token);
+        } else if remaining_input.starts_with("match:") {
+            let token: Token = Token::new(TokenType::MATCH, "match:".to_string());
+            self.pos += 6;
+            return  Some(token)
         }
         else if remaining_input.starts_with(char::is_numeric) || remaining_input.starts_with('.') {
             return Some(self.tokenize_number());
