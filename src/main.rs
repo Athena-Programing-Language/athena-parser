@@ -4,14 +4,12 @@ mod parser;
 use lexer::Lexer;
 
 fn main() {
-    let input = "match:
- 1
- 1
-".to_string();
+    let input = "let a = 12 $nbr;".to_string();
     let mut lexer = Lexer::new(input);
     let tokens = lexer.tokenize();
 
     for token in tokens {
-        println!("Found token: {:?}, name: {}", token.token_type, token.name);
+        println!("Found token: {:?}", token.token_type, );
     }
+
 }

@@ -1,5 +1,3 @@
-use std::ptr::null;
-
 #[derive(Debug, Clone)]
 pub(crate) enum TokenType {
     // Operators
@@ -10,6 +8,10 @@ pub(crate) enum TokenType {
     EQUAL,        // For '='
     COLON_END,
     FUNCTION,
+    LPAD,
+    RPAD,
+    LSCR,
+    RSCR,
     // Keywords
     LET,
     CONST,
@@ -60,8 +62,8 @@ impl Lexer {
     pub fn new(input: String) -> Self {
         Lexer {
             token_list: Vec::new(),
-            input,
             pos: 0,
+            input,
         }
     }
 
@@ -106,26 +108,26 @@ impl Lexer {
             let token = Token::new(TokenType::EQUAL, "=".to_string());
             self.pos += 1;
             return Some(token);
-        } else if  remaining_input.starts_with(";") || remaining_input.starts_with(",") { 
+        } else if remaining_input.starts_with(";") || remaining_input.starts_with(",") {
             let token: Token = Token::new(TokenType::COLON_END, ";".to_string());
             self.pos += 1;
             return Some(token);
-        } else if remaining_input.starts_with(":end")  {
+        } else if remaining_input.starts_with(":end") {
             let token: Token = Token::new(TokenType::COLON_END, ";".to_string());
             self.pos += 4;
             return Some(token);
         } else if remaining_input.starts_with("if:") {
             let token: Token = Token::new(TokenType::IF, "if:".to_string());
             self.pos += 3;
-            return  Some(token)
+            return Some(token);
         } else if remaining_input.starts_with(":else:") {
             let token: Token = Token::new(TokenType::ELSE, ":else:".to_string());
             self.pos += 6;
-            return  Some(token)
-        } else if remaining_input.starts_with("do"){
+            return Some(token);
+        } else if remaining_input.starts_with("do") {
             let token: Token = Token::new(TokenType::DO, "do".to_string());
             self.pos += 2;
-            return Some(token)
+            return Some(token);
         } else if remaining_input.starts_with("while:") {
             let token: Token = Token::new(TokenType::WHILE, "while:".to_string());
             self.pos += 6;
@@ -133,17 +135,76 @@ impl Lexer {
         } else if remaining_input.starts_with("for:") {
             let token: Token = Token::new(TokenType::FOR, "for:".to_string());
             self.pos += 4;
-            return  Some(token);
+            return Some(token);
         } else if remaining_input.starts_with("match:") {
             let token: Token = Token::new(TokenType::MATCH, "match:".to_string());
             self.pos += 6;
-            return  Some(token)
+            return Some(token);
+        } else if remaining_input.starts_with("->") {
+            let token = Token::new(TokenType::RETURN, "->".to_string());
+            self.pos += 2;
+            return Some(token);
+        } else if remaining_input.starts_with("(") {
+            let token: Token = Token::new(TokenType::LPAD, "(".to_string());
+            self.pos += 1;
+            return Some(token);
+        } else if remaining_input.starts_with(")") {
+            let token: Token = Token::new(TokenType::RPAD, ")".to_string());
+            self.pos += 1;
+            return Some(token);
+        } else if remaining_input.starts_with("&true") || remaining_input.starts_with("&false") {
+            let token: Token = Token::new(TokenType::BOOL_LITERAL, remaining_input.to_string());
+            if remaining_input.starts_with("&true") {
+                self.pos += 5;
+            } else {
+                self.pos += 6;
+            }
+            return Some(token);
+        } else if remaining_input.starts_with('"') {
+            return Some(self.tokenize_string_literal());
+        } else if remaining_input.starts_with("{") {
+            let token: Token = Token::new(TokenType::RSCR, "{".to_string());
+            self.pos += 1;
+            return Some(token);
+        } else if remaining_input.starts_with("}") {
+            let token: Token = Token::new(TokenType::LSCR, "}".to_string());
+            self.pos += 1;
+            return Some(token);
+        } else if remaining_input.starts_with("$nbr") {
+            let token: Token = Token::new(TokenType::NUMBER_TYPE, "$nbr".to_string());
+            self.pos += 4;
+            return Some(token);
+        } else if remaining_input.starts_with("$str") {
+            let token: Token = Token::new(TokenType::STRING_TYPE, "$str".to_string());
+            self.pos += 4;
+            return Some(token);
+        } else if remaining_input.starts_with("$bool") {
+            let token: Token = Token::new(TokenType::BOOL_TYPE, "$bool".to_string());
+            self.pos += 5;
+            return Some(token);
         }
-        else if remaining_input.starts_with(char::is_numeric) || remaining_input.starts_with('.') {
+        else if remaining_input.chars().next().unwrap().is_digit(10) || remaining_input.starts_with('.') {
             return Some(self.tokenize_number());
         }
-
+        else if remaining_input.chars().next().unwrap().is_alphabetic() || remaining_input.starts_with('_') {
+            return Some(self.tokenize_variable());
+        }
         None
+    }
+    fn tokenize_variable(&mut self) -> Token {
+        let mut variable = String::new();
+
+        while self.pos < self.input.len() {
+            let current_char = self.input[self.pos..].chars().next().unwrap();
+            if current_char.is_alphanumeric() || current_char == '_' {
+                variable.push(current_char);
+            } else {
+                break;
+            }
+            self.pos += 1;
+        }
+
+        Token::new(TokenType::VARIABLE, variable)
     }
 
     fn tokenize_number(&mut self) -> Token {
@@ -167,9 +228,40 @@ impl Lexer {
         Token::new(TokenType::NUMBER_LITERAL, number)
     }
 
+    fn tokenize_string_literal(&mut self) -> Token {
+        let mut literal = String::new();
+        self.pos += 1; // Пропускаємо відкриття лапок
+
+        while self.pos < self.input.len() {
+            let current_char = self.input[self.pos..].chars().next().unwrap();
+
+            if current_char == '"' {
+                self.pos += 1; // Пропускаємо закриття лапок
+                break;
+            } else if current_char == '\\' {
+                // Обробка екранованих символів
+                self.pos += 1;
+                let next_char = self.input[self.pos..].chars().next().unwrap();
+                match next_char {
+                    'n' => literal.push('\n'),
+                    't' => literal.push('\t'),
+                    '\\' => literal.push('\\'),
+                    '"' => literal.push('"'),
+                    _ => literal.push(next_char),
+                }
+            } else {
+                literal.push(current_char);
+            }
+            self.pos += 1;
+        }
+
+        Token::new(TokenType::STRING_LITERAL, literal)
+    }
+
     fn skip_whitespace(&mut self) {
         while self.pos < self.input.len() && self.input[self.pos..].chars().next().unwrap().is_whitespace() {
             self.pos += 1;
         }
     }
 }
+

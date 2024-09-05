@@ -1,11 +1,14 @@
 use crate::lexer::Token;
-
 struct Parser {
-    token_list: Vec<Token>,
-    pos: isize
+    tokens: Vec<Token>,
+    pos: isize,
 }
-impl Parser{
-    fn new(token_list: Vec<Token>, pos: isize){
-        token_list;
-        pos;
-    }}
+impl Parser {
+    fn new(tokens: Vec<Token>) -> Self {
+        Self {
+            tokens,
+            pos: 0,
+        }
+    }
+    
+}
