@@ -4,7 +4,7 @@ mod parser;
 use lexer::Lexer;
 
 fn main() {
-    let mut lexer = Lexer::new("for: let a = 0; a = 5; a + 1; {a}".to_string());
+    let mut lexer = Lexer::new("let \"ami\" = ami $str; match: ami {ami -> 1; ten -> 2}".to_string());
     let tokens = lexer.tokenize();
 
     for token in tokens {
