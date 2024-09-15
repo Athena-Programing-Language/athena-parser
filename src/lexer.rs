@@ -22,6 +22,8 @@ pub(crate) enum TokenType {
     FOR,
     MATCH,
     RETURN,
+    DID,
+    LOG,
     // Types
     STRING_TYPE,
     NUMBER_TYPE,
@@ -78,10 +80,11 @@ impl Lexer {
 
     fn next_token(&mut self) -> Option<Token> {
         let remaining_input = &self.input[self.pos..];
-        if remaining_input.starts_with("->") {
+         if remaining_input.starts_with("->") {
             self.pos += 2;
             return Some(Token::new(TokenType::RETURN, "->".to_string()));
-        } else if remaining_input.starts_with("let") {
+        }
+        else if remaining_input.starts_with("let") {
             self.pos += 3;
             return Some(Token::new(TokenType::LET, "let".to_string()));
         } else if remaining_input.starts_with("cst") {
@@ -90,7 +93,8 @@ impl Lexer {
         } else if remaining_input.starts_with("+") {
             self.pos += 1;
             return Some(Token::new(TokenType::PLUS, "+".to_string()));
-        } else if remaining_input.starts_with("-") {
+        }
+        else if remaining_input.starts_with("-") {
             self.pos += 1;
             return Some(Token::new(TokenType::MINUS, "-".to_string()));
         } else if remaining_input.starts_with("*") {
@@ -117,7 +121,14 @@ impl Lexer {
         } else if remaining_input.starts_with("do") {
             self.pos += 2;
             return Some(Token::new(TokenType::DO, "do".to_string()));
-        } else if remaining_input.starts_with("while:") {
+        } else if remaining_input.starts_with("did") {
+            self.pos += 3;
+            return Some(Token::new(TokenType::DID, String::from("did".to_string())));
+        } else if remaining_input.starts_with("log") {
+            self.pos += 3;
+            return  Some(Token::new(TokenType::LOG, "log".to_string()));
+        }
+        else if remaining_input.starts_with("while:") {
             self.pos += 6;
             return Some(Token::new(TokenType::WHILE, "while:".to_string()));
         } else if remaining_input.starts_with("for:") {
