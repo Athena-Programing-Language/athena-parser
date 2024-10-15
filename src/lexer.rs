@@ -7,7 +7,7 @@ pub(crate) enum TokenType {
     SLASH,
     EQUAL,
     COLON_END,
-    FUNCTION,
+    DOBLE_DOT,
     LPAD,
     RPAD,
     LSCR,
@@ -80,7 +80,7 @@ impl Lexer {
 
     fn next_token(&mut self) -> Option<Token> {
         let remaining_input = &self.input[self.pos..];
-         if remaining_input.starts_with("->") {
+        if remaining_input.starts_with("->") {
             self.pos += 2;
             return Some(Token::new(TokenType::RETURN, "->".to_string()));
         }
@@ -169,9 +169,14 @@ impl Lexer {
         } else if remaining_input.starts_with("$bool") {
             self.pos += 5;
             return Some(Token::new(TokenType::BOOL_TYPE, "$bool".to_string()));
-        } else if remaining_input.chars().next().unwrap().is_digit(10) || remaining_input.starts_with('.') {
+        } else if remaining_input.starts_with("::") {
+            self.pos += 2;
+            return  Some(Token::new(TokenType::DOBLE_DOT, "::".to_string()));
+        }
+        else if remaining_input.chars().next().unwrap().is_digit(10) || remaining_input.starts_with('.') {
             return Some(self.tokenize_number());
-        } else if remaining_input.chars().next().unwrap().is_alphabetic() || remaining_input.starts_with('_') {
+        }
+        else if remaining_input.chars().next().unwrap().is_alphabetic() || remaining_input.starts_with('_') {
             return Some(self.tokenize_variable());
         }
         None

@@ -3,3 +3,6 @@ name = "parser"
 version = "0.1.0"
 edition = "2021"
 license = "GPL-3"
+
+[dependencies]
+nom = "7.1.3"
